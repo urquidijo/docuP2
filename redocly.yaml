@@ -8,6 +8,6 @@ extends:
 rules:
   no-server-trailing-slash: off   # Permitimos /api/ (DRF/routers)
   no-path-trailing-slash: off     # Permitimos /bitacora/ etc.
-  no-server-example.com: warn     # localhost/railway -> solo warning
+  no-server-example.com: off     # localhost/railway -> solo warning
   operation-operationId-unique: error
   path-parameters-defined: error

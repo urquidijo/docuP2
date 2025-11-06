@@ -1,0 +1,94 @@
+ProductoUpsert:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/ProductoCreateUpdate'
+      examples:
+        json:
+          value:
+            nombre: "Refrigerador X"
+            descripcion: "No Frost 300L"
+            precio: 499.99
+            stock: 12
+            low_stock_threshold: 3
+            categoria_id: 1
+            imagen: "https://bucket.s3.amazonaws.com/productos/abc.png"
+    multipart/form-data:
+      schema:
+        allOf:
+          - $ref: '#/components/schemas/ProductoCreateUpdate'
+          - type: object
+            properties:
+              imagen_archivo:
+                type: string
+                format: binary
+                description: Archivo de imagen (S3). Si se envía, el backend generará `imagen` (URL).
+      examples:
+        multipart:
+          summary: Subida con imagen
+          value:
+            nombre: "Licuadora"
+            descripcion: "Vaso de vidrio 1.5L"
+            precio: 59.9
+            stock: 20
+            low_stock_threshold: 5
+            categoria_id: 6
+            imagen_archivo: "(binary)"
+
+DescuentoCreate:
+  required: true
+  content:
+    application/json:
+      schema:
+        oneOf:
+          - $ref: '#/components/schemas/ProductoDescuentoCreate'
+          - type: object
+            properties:
+              productos:
+                type: array
+                items: { type: integer }
+                description: IDs de productos (creación múltiple)
+            required: [productos, porcentaje, fecha_inicio]
+            allOf:
+              - $ref: '#/components/schemas/ProductoDescuentoBase'
+      examples:
+        simple:
+          value:
+            producto_id: 10
+            porcentaje: 15
+            fecha_inicio: "2025-11-05T15:00:00Z"
+            fecha_fin: "2025-12-01T00:00:00Z"
+        multiple:
+          value:
+            productos: [10, 11, 12]
+            porcentaje: 10
+            fecha_inicio: "2025-11-05T15:00:00Z"
+
+DescuentoUpdate:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/ProductoDescuentoUpdate'
+
+CarritoActualSet:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/CartItemInput'
+        required: [items]
+      examples:
+        ejemplo:
+          value:
+            items:
+              - product_id: 5
+                quantity: 2
+              - product_id: 8
+                quantity: 1

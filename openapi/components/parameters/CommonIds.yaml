@@ -4,3 +4,12 @@ IdPath:
   required: true
   schema: { type: integer, minimum: 1 }
   description: ID interno
+  
+  ActivosParam:
+  name: activos
+  in: query
+  required: false
+  schema:
+    type: boolean
+  description: Si es true, filtra solo descuentos activos (también existe /descuentos/activos/)
+
