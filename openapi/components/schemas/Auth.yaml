@@ -1,0 +1,17 @@
+LoginInput:
+  type: object
+  required: [username, password]
+  properties:
+    username: { type: string, example: "rsuarez" }
+    password: { type: string, format: password, example: "MiClave#2025" }
+
+TokenResponse:
+  type: object
+  required: [token, user]
+  properties:
+    token:
+      type: string
+      description: "Token Bearer opaco (firmado; no JWT)"
+      example: "eyJzaWduZWQiOiJhYmMxMjM0In0="
+    user:
+      $ref: './Usuario.yaml#/UsuarioPublico'

@@ -1,0 +1,9 @@
+extends: ["spectral:oas", "spectral:asyncapi"]
+rules:
+  operation-operationId:
+    description: Cada operación debe tener operationId único (módulo_accion)
+    recommended: true
+    given: "$.paths[*][*]"
+    then:
+      field: operationId
+      function: truthy

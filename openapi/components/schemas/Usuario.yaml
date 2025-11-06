@@ -1,0 +1,30 @@
+UsuarioPublico:
+  type: object
+  required: [id, username, email]
+  properties:
+    id: { type: integer, example: 42 }
+    username: { type: string, example: "rsuarez" }
+    email: { type: string, format: email, example: "rsuarez@mail.com" }
+    rol: { type: integer, nullable: true, example: 1, description: "ID del rol o null" }
+    rol_nombre: { type: string, nullable: true, readOnly: true, example: "Cliente" }
+    permisos:
+      type: array
+      readOnly: true
+      items: { type: string, example: "usuarios.ver" }
+
+UsuarioCreate:
+  type: object
+  required: [username, email, password]
+  properties:
+    username: { type: string, example: "mrcholo" }
+    email: { type: string, format: email, example: "cholo@mail.com" }
+    password: { type: string, format: password, example: "MiClave#2025" }
+    rol: { type: integer, nullable: true, example: 1, description: "Si se omite, se usa rol 'Cliente' por defecto" }
+
+UsuarioUpdate:
+  type: object
+  properties:
+    username: { type: string, example: "mrcholo" }
+    email: { type: string, format: email, example: "cholo@mail.com" }
+    password: { type: string, format: password, example: "OtraClave#2025" }
+    rol: { type: integer, nullable: true, example: 2 }

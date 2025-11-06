@@ -1,0 +1,912 @@
+openapi: 3.0.3
+info:
+  title: Backend API – Usuarios, Tienda, Pagos, Analítica y Bitácora
+  version: 1.0.0
+  description: |
+    API para gestión de usuarios, tienda, pagos, analítica y bitácora.
+    Autenticación **Bearer** con tokens firmados (no JWT) emitidos por `/auth/login/`.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: 'http://localhost:8000/api/'
+    description: Servidor local
+  - url: 'https://web-production-a6f44.up.railway.app/api/'
+    description: Producción en Railway
+
+tags:
+  - name: Auth
+    description: Inicio/cierre de sesión y perfil autenticado
+  - name: Usuarios
+    description: Gestión de usuarios, roles y permisos
+  - name: Tienda
+    description: Catálogo, productos y categorías
+  - name: Pagos
+    description: Flujos de cobro, checkout y webhooks
+  - name: Analítica
+    description: Indicadores y reportes internos
+  - name: Bitácora
+    description: Auditoría de acciones del sistema (solo Administrador)
+
+security:
+  - bearerToken: []
+
+paths:
+  # ===================== BITÁCORA =====================
+  /bitacora/:
+    get:
+      tags: [Bitácora]
+      summary: Listar entradas de bitácora (solo Administrador)
+      description: |
+        Lista cronológica (desc) de eventos registrados por el sistema.
+        **Solo lectura**. Requiere autenticación y rol **Administrador**.
+      operationId: bitacora_listar
+      security:
+        - bearerToken: []
+      x-permissions:
+        - Administrador
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK (paginado)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBitacora'
+              examples:
+                ejemplo:
+                  value:
+                    count: 2
+                    next: null
+                    previous: null
+                    results:
+                      - id: 322
+                        usuario: 12
+                        usuario_username: "admin"
+                        accion: "CREO UN USUARIO"
+                        ip_address: "181.114.20.15"
+                        creado_en: "2025-11-05T23:14:17Z"
+                      - id: 321
+                        usuario: 12
+                        usuario_username: "admin"
+                        accion: "LOGIN"
+                        ip_address: "181.114.20.15"
+                        creado_en: "2025-11-05T23:10:02Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /bitacora/{id}/:
+    get:
+      tags: [Bitácora]
+      summary: Obtener detalle de una entrada (solo Administrador)
+      operationId: bitacora_obtener
+      security:
+        - bearerToken: []
+      x-permissions:
+        - Administrador
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BitacoraEntry'
+              examples:
+                ejemplo:
+                  value:
+                    id: 322
+                    usuario: 12
+                    usuario_username: "admin"
+                    accion: "CREO UN USUARIO"
+                    ip_address: "181.114.20.15"
+                    creado_en: "2025-11-05T23:14:17Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ===================== AUTH =====================
+  /auth/login/:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      operationId: auth_login
+      security: []   # público
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequest'
+      responses:
+        '200':
+          description: Token emitido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me/:
+    get:
+      tags: [Auth]
+      summary: Perfil autenticado
+      operationId: auth_me
+      security:
+        - bearerToken: []
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPublico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout/:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesión
+      operationId: auth_logout
+      security:
+        - bearerToken: []
+      responses:
+        '204':
+          description: Cerró sesión correctamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ===================== USUARIOS =====================
+  /usuario/:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios
+      operationId: usuarios_listar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsuarioPublico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario
+      operationId: usuarios_crear
+      security:
+        - bearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCreate'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPublico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /usuario/{id}/:
+    get:
+      tags: [Usuarios]
+      summary: Obtener usuario
+      operationId: usuarios_obtener
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPublico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Usuarios]
+      summary: Reemplazar usuario
+      operationId: usuarios_reemplazar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioUpdate'
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPublico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Usuarios]
+      summary: Actualizar usuario (parcial)
+      operationId: usuarios_actualizar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioUpdate'
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPublico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario
+      operationId: usuarios_eliminar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ===================== ROL =====================
+  /rol/:
+    get:
+      tags: [Usuarios]
+      summary: Listar roles
+      operationId: rol_listar
+      security:
+        - bearerToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Rol' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Usuarios]
+      summary: Crear rol
+      operationId: rol_crear
+      security:
+        - bearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolCreate' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rol' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /rol/{id}/:
+    get:
+      tags: [Usuarios]
+      summary: Obtener rol
+      operationId: rol_obtener
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rol' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Usuarios]
+      summary: Reemplazar rol
+      operationId: rol_reemplazar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rol' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Usuarios]
+      summary: Actualizar rol (parcial)
+      operationId: rol_actualizar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rol' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar rol
+      operationId: rol_eliminar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ===================== PERMISO =====================
+  /permiso/:
+    get:
+      tags: [Usuarios]
+      summary: Listar permisos
+      operationId: permiso_listar
+      security:
+        - bearerToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Permiso' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Usuarios]
+      summary: Crear permiso
+      operationId: permiso_crear
+      security:
+        - bearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermisoCreate' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /permiso/{id}/:
+    get:
+      tags: [Usuarios]
+      summary: Obtener permiso
+      operationId: permiso_obtener
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permiso' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Usuarios]
+      summary: Reemplazar permiso
+      operationId: permiso_reemplazar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermisoUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Usuarios]
+      summary: Actualizar permiso (parcial)
+      operationId: permiso_actualizar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermisoUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Permiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar permiso
+      operationId: permiso_eliminar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ===================== ROL-PERMISO =====================
+  /rolpermiso/:
+    get:
+      tags: [Usuarios]
+      summary: Listar vínculos rol-permiso
+      operationId: rolpermiso_listar
+      security:
+        - bearerToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RolPermiso' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Usuarios]
+      summary: Crear vínculo rol-permiso
+      operationId: rolpermiso_crear
+      security:
+        - bearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolPermisoCreate' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolPermiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /rolpermiso/{id}/:
+    get:
+      tags: [Usuarios]
+      summary: Obtener vínculo rol-permiso
+      operationId: rolpermiso_obtener
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolPermiso' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Usuarios]
+      summary: Reemplazar vínculo rol-permiso
+      operationId: rolpermiso_reemplazar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolPermisoUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolPermiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Usuarios]
+      summary: Actualizar vínculo (parcial)
+      operationId: rolpermiso_actualizar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RolPermisoUpdate' }
+      responses:
+        '200':
+          description: Actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RolPermiso' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar vínculo
+      operationId: rolpermiso_eliminar
+      security:
+        - bearerToken: []
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+      description: ID interno
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+      description: Página
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+      description: Tamaño de página
+
+  responses:
+    Unauthorized:
+      description: No autorizado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string, example: "No autenticado." }
+    Forbidden:
+      description: Prohibido (se requiere rol Administrador)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string, example: "No tiene permisos para realizar esta acción." }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string, example: "No encontrado." }
+    BadRequest:
+      description: Petición inválida
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string, example: "Usuario y contrasena son requeridos" }
+
+  requestBodies:
+    LoginRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginInput'
+          examples:
+            valido:
+              value:
+                username: "rsuarez"
+                password: "MiClave#2025"
+
+  schemas:
+    # ----- Auth / Usuario -----
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: "rsuarez" }
+        password: { type: string, format: password, example: "MiClave#2025" }
+
+    UsuarioPublico:
+      type: object
+      required: [id, username, email]
+      properties:
+        id: { type: integer, example: 42 }
+        username: { type: string, example: "rsuarez" }
+        email: { type: string, format: email, example: "rsuarez@mail.com" }
+        rol: { type: integer, nullable: true, example: 1, description: "ID del rol o null" }
+        rol_nombre: { type: string, nullable: true, readOnly: true, example: "Cliente" }
+        permisos:
+          type: array
+          readOnly: true
+          items: { type: string, example: "usuarios.ver" }
+
+    UsuarioCreate:
+      type: object
+      required: [username, email, password]
+      properties:
+        username: { type: string, example: "mrcholo" }
+        email: { type: string, format: email, example: "cholo@mail.com" }
+        password: { type: string, format: password, example: "MiClave#2025" }
+        rol: { type: integer, nullable: true, example: 1, description: "Si se omite, se usa rol 'Cliente' por defecto" }
+
+    UsuarioUpdate:
+      type: object
+      properties:
+        username: { type: string, example: "mrcholo" }
+        email: { type: string, format: email, example: "cholo@mail.com" }
+        password: { type: string, format: password, example: "OtraClave#2025" }
+        rol: { type: integer, nullable: true, example: 2 }
+
+    TokenResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+          description: Token Bearer opaco (firmado; no JWT)
+          example: "eyJzaWduZWQiOiJhYmMxMjM0In0="
+        user:
+          $ref: '#/components/schemas/UsuarioPublico'
+
+    # ----- Rol -----
+    Rol:
+      type: object
+      required: [id, nombre]
+      properties:
+        id: { type: integer, example: 1 }
+        nombre: { type: string, example: "Admin" }
+
+    RolCreate:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, example: "Cliente" }
+
+    RolUpdate:
+      type: object
+      properties:
+        nombre: { type: string, example: "Operador" }
+
+    # ----- Permiso -----
+    Permiso:
+      type: object
+      required: [id, nombre]
+      properties:
+        id: { type: integer, example: 10 }
+        nombre: { type: string, example: "usuarios.ver" }
+
+    PermisoCreate:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, example: "usuarios.editar" }
+
+    PermisoUpdate:
+      type: object
+      properties:
+        nombre: { type: string, example: "usuarios.crear" }
+
+    # ----- RolPermiso -----
+    RolPermiso:
+      type: object
+      required: [id, rol, permiso]
+      properties:
+        id: { type: integer, example: 3 }
+        rol: { type: integer, example: 1, description: "ID de Rol" }
+        permiso: { type: integer, example: 10, description: "ID de Permiso" }
+        rol_nombre: { type: string, readOnly: true, example: "Admin" }
+        permiso_nombre: { type: string, readOnly: true, example: "usuarios.ver" }
+
+    RolPermisoCreate:
+      type: object
+      required: [rol, permiso]
+      properties:
+        rol: { type: integer, example: 1 }
+        permiso: { type: integer, example: 10 }
+
+    RolPermisoUpdate:
+      type: object
+      properties:
+        rol: { type: integer, example: 2 }
+        permiso: { type: integer, example: 11 }
+
+    # ----- Bitácora -----
+    BitacoraEntry:
+      type: object
+      description: Entrada de bitácora (solo lectura)
+      required: [id, accion, creado_en]
+      properties:
+        id: { type: integer, example: 1203 }
+        usuario:
+          type: integer
+          nullable: true
+          description: ID del usuario (si existía en el momento del evento)
+          example: 42
+        usuario_username:
+          type: string
+          nullable: true
+          readOnly: true
+          example: "rsuarez"
+        accion:
+          type: string
+          example: "LOGIN"
+        ip_address:
+          type: string
+          nullable: true
+          example: "200.87.1.25"
+          description: IP del cliente (X-Forwarded-For o REMOTE_ADDR)
+        creado_en:
+          type: string
+          format: date-time
+          example: "2025-11-05T21:14:17Z"
+
+    PaginatedBitacora:
+      type: object
+      description: Respuesta paginada estilo DRF PageNumberPagination
+      properties:
+        count: { type: integer, example: 248 }
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: "https://api.tuapp.com/api/bitacora/?page=3"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BitacoraEntry'

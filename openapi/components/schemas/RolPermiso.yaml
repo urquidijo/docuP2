@@ -1,0 +1,22 @@
+RolPermiso:
+  type: object
+  required: [id, rol, permiso]
+  properties:
+    id: { type: integer, example: 3 }
+    rol: { type: integer, example: 1, description: "ID de Rol" }
+    permiso: { type: integer, example: 10, description: "ID de Permiso" }
+    rol_nombre: { type: string, readOnly: true, example: "Admin" }
+    permiso_nombre: { type: string, readOnly: true, example: "usuarios.ver" }
+
+RolPermisoCreate:
+  type: object
+  required: [rol, permiso]
+  properties:
+    rol: { type: integer, example: 1 }
+    permiso: { type: integer, example: 10 }
+
+RolPermisoUpdate:
+  type: object
+  properties:
+    rol: { type: integer, example: 2 }
+    permiso: { type: integer, example: 11 }

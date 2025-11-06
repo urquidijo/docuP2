@@ -1,0 +1,557 @@
+# ===================== AUTH =====================
+/auth/login/:
+  post:
+    tags: [Auth]
+    summary: Iniciar sesión
+    operationId: auth_login
+    security: []    # público
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Auth.yaml#/LoginInput'
+    responses:
+      '200':
+        description: Token emitido
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Auth.yaml#/TokenResponse'
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+
+/auth/me/:
+  get:
+    tags: [Auth]
+    summary: Perfil autenticado
+    operationId: auth_me
+    security:
+      - bearerToken: []
+    responses:
+      '200':
+        description: Usuario autenticado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+/auth/logout/:
+  post:
+    tags: [Auth]
+    summary: Cerrar sesión
+    operationId: auth_logout
+    security:
+      - bearerToken: []
+    responses:
+      '204':
+        description: Cerró sesión correctamente
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+# ===================== USUARIO =====================
+/usuario/:
+  get:
+    tags: [Usuarios]
+    summary: Listar usuarios
+    operationId: usuarios_listar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/Pagination.yaml#/Page'
+      - $ref: '../components/parameters/Pagination.yaml#/PageSize'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+  post:
+    tags: [Usuarios]
+    summary: Crear usuario
+    operationId: usuarios_crear
+    security:
+      - bearerToken: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Usuario.yaml#/UsuarioCreate'
+    responses:
+      '201':
+        description: Creado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+/usuario/{id}/:
+  get:
+    tags: [Usuarios]
+    summary: Obtener usuario
+    operationId: usuarios_obtener
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  put:
+    tags: [Usuarios]
+    summary: Reemplazar usuario
+    operationId: usuarios_reemplazar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Usuario.yaml#/UsuarioUpdate'
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  patch:
+    tags: [Usuarios]
+    summary: Actualizar usuario (parcial)
+    operationId: usuarios_actualizar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Usuario.yaml#/UsuarioUpdate'
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Usuario.yaml#/UsuarioPublico'
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  delete:
+    tags: [Usuarios]
+    summary: Eliminar usuario
+    operationId: usuarios_eliminar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '204':
+        description: Eliminado
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+
+# ===================== ROL =====================
+/rol/:
+  get:
+    tags: [Usuarios]
+    summary: Listar roles
+    operationId: rol_listar
+    security:
+      - bearerToken: []
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '../components/schemas/Rol.yaml#/Rol' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+  post:
+    tags: [Usuarios]
+    summary: Crear rol
+    operationId: rol_crear
+    security:
+      - bearerToken: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Rol.yaml#/RolCreate' }
+    responses:
+      '201':
+        description: Creado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Rol.yaml#/Rol' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+/rol/{id}/:
+  get:
+    tags: [Usuarios]
+    summary: Obtener rol
+    operationId: rol_obtener
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Rol.yaml#/Rol' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  put:
+    tags: [Usuarios]
+    summary: Reemplazar rol
+    operationId: rol_reemplazar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Rol.yaml#/RolUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Rol.yaml#/Rol' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  patch:
+    tags: [Usuarios]
+    summary: Actualizar rol (parcial)
+    operationId: rol_actualizar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Rol.yaml#/RolUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Rol.yaml#/Rol' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  delete:
+    tags: [Usuarios]
+    summary: Eliminar rol
+    operationId: rol_eliminar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '204':
+        description: Eliminado
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+
+# ===================== PERMISO =====================
+/permiso/:
+  get:
+    tags: [Usuarios]
+    summary: Listar permisos
+    operationId: permiso_listar
+    security:
+      - bearerToken: []
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '../components/schemas/Permiso.yaml#/Permiso' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+  post:
+    tags: [Usuarios]
+    summary: Crear permiso
+    operationId: permiso_crear
+    security:
+      - bearerToken: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Permiso.yaml#/PermisoCreate' }
+    responses:
+      '201':
+        description: Creado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Permiso.yaml#/Permiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+/permiso/{id}/:
+  get:
+    tags: [Usuarios]
+    summary: Obtener permiso
+    operationId: permiso_obtener
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Permiso.yaml#/Permiso' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  put:
+    tags: [Usuarios]
+    summary: Reemplazar permiso
+    operationId: permiso_reemplazar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Permiso.yaml#/PermisoUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Permiso.yaml#/Permiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  patch:
+    tags: [Usuarios]
+    summary: Actualizar permiso (parcial)
+    operationId: permiso_actualizar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/Permiso.yaml#/PermisoUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/Permiso.yaml#/Permiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  delete:
+    tags: [Usuarios]
+    summary: Eliminar permiso
+    operationId: permiso_eliminar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '204': { description: Eliminado }
+      '401': { $ref: '../components/responses/Errors.yaml#/Unauthorized' }
+      '404': { $ref: '../components/responses/Errors.yaml#/NotFound' }
+
+# ===================== ROL-PERMISO =====================
+/rolpermiso/:
+  get:
+    tags: [Usuarios]
+    summary: Listar vínculos rol-permiso
+    operationId: rolpermiso_listar
+    security:
+      - bearerToken: []
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermiso' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+  post:
+    tags: [Usuarios]
+    summary: Crear vínculo rol-permiso
+    operationId: rolpermiso_crear
+    security:
+      - bearerToken: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermisoCreate' }
+    responses:
+      '201':
+        description: Creado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+
+/rolpermiso/{id}/:
+  get:
+    tags: [Usuarios]
+    summary: Obtener vínculo rol-permiso
+    operationId: rolpermiso_obtener
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermiso' }
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  put:
+    tags: [Usuarios]
+    summary: Reemplazar vínculo rol-permiso
+    operationId: rolpermiso_reemplazar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermisoUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  patch:
+    tags: [Usuarios]
+    summary: Actualizar vínculo (parcial)
+    operationId: rolpermiso_actualizar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermisoUpdate' }
+    responses:
+      '200':
+        description: Actualizado
+        content:
+          application/json:
+            schema: { $ref: '../components/schemas/RolPermiso.yaml#/RolPermiso' }
+      '400':
+        $ref: '../components/responses/Errors.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
+  delete:
+    tags: [Usuarios]
+    summary: Eliminar vínculo
+    operationId: rolpermiso_eliminar
+    security:
+      - bearerToken: []
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '204': { description: Eliminado }
+      '401': { $ref: '../components/responses/Errors.yaml#/Unauthorized' }
+      '404': { $ref: '../components/responses/Errors.yaml#/NotFound' }

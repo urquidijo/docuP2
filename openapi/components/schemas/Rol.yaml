@@ -1,0 +1,17 @@
+Rol:
+  type: object
+  required: [id, nombre]
+  properties:
+    id: { type: integer, example: 1 }
+    nombre: { type: string, example: "Admin" }
+
+RolCreate:
+  type: object
+  required: [nombre]
+  properties:
+    nombre: { type: string, example: "Cliente" }
+
+RolUpdate:
+  type: object
+  properties:
+    nombre: { type: string, example: "Operador" }

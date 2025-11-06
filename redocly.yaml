@@ -1,0 +1,13 @@
+apis:
+  main:
+    root: openapi/openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-server-trailing-slash: off   # Permitimos /api/ (DRF/routers)
+  no-path-trailing-slash: off     # Permitimos /bitacora/ etc.
+  no-server-example.com: warn     # localhost/railway -> solo warning
+  operation-operationId-unique: error
+  path-parameters-defined: error

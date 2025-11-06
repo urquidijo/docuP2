@@ -1,0 +1,17 @@
+Permiso:
+  type: object
+  required: [id, nombre]
+  properties:
+    id: { type: integer, example: 10 }
+    nombre: { type: string, example: "usuarios.ver" }
+
+PermisoCreate:
+  type: object
+  required: [nombre]
+  properties:
+    nombre: { type: string, example: "usuarios.editar" }
+
+PermisoUpdate:
+  type: object
+  properties:
+    nombre: { type: string, example: "usuarios.crear" }

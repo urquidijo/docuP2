@@ -1,0 +1,11 @@
+LoginRequest:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/Auth.yaml#/LoginInput'
+      examples:
+        valido:
+          value:
+            username: "rsuarez"
+            password: "MiClave#2025"

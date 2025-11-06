@@ -1,0 +1,6 @@
+IdPath:
+  name: id
+  in: path
+  required: true
+  schema: { type: integer, minimum: 1 }
+  description: ID interno

@@ -1,0 +1,48 @@
+BitacoraEntry:
+  type: object
+  description: Entrada de bitácora (solo lectura)
+  required: [id, accion, creado_en]
+  properties:
+    id: { type: integer, example: 1203 }
+    usuario:
+      type: integer
+      nullable: true
+      description: ID del usuario (si existía en el momento del evento)
+      example: 42
+    usuario_username:
+      type: string
+      nullable: true
+      readOnly: true
+      example: "rsuarez"
+    accion:
+      type: string
+      example: "LOGIN"
+    ip_address:
+      type: string
+      nullable: true
+      example: "200.87.1.25"
+      description: IP del cliente (X-Forwarded-For o REMOTE_ADDR)
+    creado_en:
+      type: string
+      format: date-time
+      example: "2025-11-05T21:14:17Z"
+
+PaginatedBitacora:
+  type: object
+  description: Respuesta paginada estilo DRF PageNumberPagination
+  properties:
+    count: { type: integer, example: 248 }
+    next:
+      type: string
+      nullable: true
+      format: uri
+      example: "https://api.tuapp.com/api/bitacora/?page=3"
+    previous:
+      type: string
+      nullable: true
+      format: uri
+      example: null
+    results:
+      type: array
+      items:
+        $ref: '#/BitacoraEntry'

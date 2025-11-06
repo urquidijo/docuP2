@@ -1,0 +1,25 @@
+{
+  "name": "docup2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "lint": "spectral lint openapi/openapi.yaml",
+    "validate": "redocly lint openapi/openapi.yaml",
+    "bundle:yaml": "redocly bundle openapi/openapi.yaml -o dist/openapi.yaml",
+    "bundle:json": "redocly bundle openapi/openapi.yaml -o dist/openapi.json --ext json",
+    "format": "openapi-format openapi/openapi.yaml -o openapi/openapi.yaml",
+    "build": "npm run bundle:yaml && npm run bundle:json",
+    "preview": "redocly preview --product redoc --port 8080",
+    "docs:build": "redocly build-docs openapi/openapi.yaml -o dist/index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@redocly/cli": "^2.11.0",
+    "@stoplight/spectral-cli": "^6.15.0",
+    "openapi-format": "^1.29.0",
+    "swagger-cli": "^4.0.4"
+  }
+}

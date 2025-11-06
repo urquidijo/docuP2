@@ -1,0 +1,36 @@
+Unauthorized:
+  description: No autorizado
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          detail: { type: string, example: "No autenticado." }
+
+BadRequest:
+  description: Petición inválida
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          detail: { type: string, example: "Usuario y contrasena son requeridos" }
+
+NotFound:
+  description: Recurso no encontrado
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          detail: { type: string, example: "No encontrado." }
+
+Forbidden:
+  description: Prohibido (se requiere rol Administrador)
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          detail: { type: string, example: "No tiene permisos para realizar esta acción." }
+

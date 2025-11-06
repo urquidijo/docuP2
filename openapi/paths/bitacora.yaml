@@ -1,0 +1,79 @@
+/bitacora/:
+  get:
+    tags: [Bitácora]
+    summary: Listar entradas de bitácora (solo Administrador)
+    description: |
+      Lista cronológica (desc) de eventos registrados por el sistema.
+      **Solo lectura**. Requiere autenticación y rol **Administrador**.
+    operationId: bitacora_listar
+    security:
+      - bearerToken: []
+    x-permissions:
+      - Administrador
+    parameters:
+      - $ref: '../components/parameters/Pagination.yaml#/Page'
+      - $ref: '../components/parameters/Pagination.yaml#/PageSize'
+    responses:
+      '200':
+        description: OK (paginado)
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Bitacora.yaml#/PaginatedBitacora'
+            examples:
+              ejemplo:
+                value:
+                  count: 2
+                  next: null
+                  previous: null
+                  results:
+                    - id: 322
+                      usuario: 12
+                      usuario_username: "admin"
+                      accion: "CREO UN USUARIO"
+                      ip_address: "181.114.20.15"
+                      creado_en: "2025-11-05T23:14:17Z"
+                    - id: 321
+                      usuario: 12
+                      usuario_username: "admin"
+                      accion: "LOGIN"
+                      ip_address: "181.114.20.15"
+                      creado_en: "2025-11-05T23:10:02Z"
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/Errors.yaml#/Forbidden'
+
+/bitacora/{id}/:
+  get:
+    tags: [Bitácora]
+    summary: Obtener detalle de una entrada (solo Administrador)
+    operationId: bitacora_obtener
+    security:
+      - bearerToken: []
+    x-permissions:
+      - Administrador
+    parameters:
+      - $ref: '../components/parameters/CommonIds.yaml#/IdPath'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/Bitacora.yaml#/BitacoraEntry'
+            examples:
+              ejemplo:
+                value:
+                  id: 322
+                  usuario: 12
+                  usuario_username: "admin"
+                  accion: "CREO UN USUARIO"
+                  ip_address: "181.114.20.15"
+                  creado_en: "2025-11-05T23:14:17Z"
+      '401':
+        $ref: '../components/responses/Errors.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses/Errors.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses/Errors.yaml#/NotFound'
