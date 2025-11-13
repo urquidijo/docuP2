@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Backend API – Usuarios, Tienda, Pagos, Analítica y Bitácora
+  title: Backend API – Usuarios, Tienda, Analítica y Bitácora
   version: 1.0.0
   description: |
-    API para gestión de usuarios, tienda, pagos, analítica y bitácora.
+    API para gestión de usuarios, tienda, analítica y bitácora.
     Autenticación **Bearer** con tokens firmados (no JWT) emitidos por `/auth/login/`.
   license:
     name: MIT
@@ -21,8 +21,6 @@ tags:
   - name: Usuarios
     description: Gestión de usuarios, roles y permisos
   - name: Tienda
-    description: Catálogo, productos y categorías
-  - name: Pagos
     description: Flujos de cobro, checkout y webhooks
   - name: Analítica
     description: Indicadores y reportes internos
@@ -33,6 +31,53 @@ security:
   - bearerToken: []
 
 paths:
+# ===================== ANALITICA =====================
+  /Analítica/:
+    get:
+      tags: [Analítica]
+      summary: Listar reportes
+      description: |
+        Lista cronológica (desc) reportes del sistema.
+        **Solo lectura**. Requiere autenticación y rol **Administrador**.
+      operationId: Analítica_reportes_listar
+      security:
+        - bearerToken: []
+      x-permissions:
+        - Administrador
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: OK (paginado)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedBitacora"
+              examples:
+                ejemplo:
+                  value:
+                    count: 2
+                    next: null
+                    previous: null
+                    results:
+                      - id: 322
+                        usuario: 12
+                        usuario_username: "admin"
+                        accion: "CREO UN USUARIO"
+                        ip_address: "181.114.20.15"
+                        creado_en: "2025-11-05T23:14:17Z"
+                      - id: 321
+                        usuario: 12
+                        usuario_username: "admin"
+                        accion: "LOGIN"
+                        ip_address: "181.114.20.15"
+                        creado_en: "2025-11-05T23:10:02Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   # ===================== BITÁCORA =====================
   /bitacora/:
     get:
